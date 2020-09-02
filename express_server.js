@@ -48,18 +48,27 @@ const foundUserByEmail = (email)=>{
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+app.get("/login",(req,res)=>{
+  res.render('urls_login');
+});
 app.post("/login", (req, res) => {
-  // res.cookie("username", req.body["username"]);
+  let {email,password} = req.body;
+  if(!foundUserByEmail(email)){
+    res.status(403);
+    return res.send("email did not found")
+  }else if (foundUserByEmail(email).password !== password){
+    res.status(403);
+    return res.send("wrong password");
+  }
+  res.cookie("user_id",foundUserByEmail(email).id);
   res.redirect("/urls");
 });
 app.post("/logout", (req, res) => {
-  // res.clearCookie("username");
   res.clearCookie("user_id");
 
   res.redirect("/urls");
 })
 app.get("/urls", (req, res) => {
-  // let templateVars = { username: req.cookies["username"], urls: urlDatabase };
   let templateVars = { user: users[req.cookies["user_id"]], urls: urlDatabase };
 
   res.render('urls_index', templateVars);
@@ -70,7 +79,6 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${randomNumberString}`);        // Respond with 'Ok' (we will replace this)
 });
 app.get("/urls/new", (req, res) => {
-  // let templateVars = { username: req.cookies["username"] }
   let templateVars = { user: users[req.cookies["user_id"]] }
 
   res.render("urls_new", templateVars);
@@ -92,11 +100,10 @@ app.post("/urls/registration",(req,res)=>{
   let id = generateRandomString(6);
   let userobject = {id,email,password};
   users[id] = userobject;
-  res.cookie("user_id",id);
+  console.log(users);
   res.redirect("/urls");
 });
 app.get("/urls/:shortURL", (req, res) => {
-  // let templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   let templateVars = { user: users[req.cookies["user_id"]], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   
   res.render('urls_show', templateVars);
