@@ -100,7 +100,6 @@ app.post("/urls/registration",(req,res)=>{
   let id = generateRandomString(6);
   let userobject = {id,email,password};
   users[id] = userobject;
-  console.log(users);
   res.redirect("/urls");
 });
 app.get("/urls/:shortURL", (req, res) => {
