@@ -30,7 +30,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "1"
   },
   "user2RandomID": {
     id: "user2RandomID",
@@ -119,6 +119,9 @@ app.post("/urls/registration", (req, res) => {
   res.redirect("/urls");
 });
 app.get("/urls/:shortURL", (req, res) => {
+  if (!users[req.cookies["user_id"]]) {
+    return res.redirect("/login");
+  }
   let templateVars = { user: users[req.cookies["user_id"]], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]["longURL"] };
 
   res.render('urls_show', templateVars);
@@ -126,7 +129,6 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 app.post("/urls/:shortURL", (req, res) => {
   if (!users[req.cookies["user_id"]]) {
-    console.log(urlDatabase);
     return res.redirect("/login");
   }
   urlDatabase[req.params.shortURL]["longURL"] = req.body["longURL"];
@@ -134,7 +136,6 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (!users[req.cookies["user_id"]]) {
-    console.log(urlDatabase);
     return res.redirect("/login");
   }
   delete urlDatabase[req.params.shortURL];
