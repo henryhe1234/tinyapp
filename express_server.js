@@ -2,12 +2,17 @@ const express = require("Express");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
-let morgan = require('morgan');
+const morgan = require('morgan');
+const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ["JustAString"]
+}))
+// app.use(cookieParser());
 app.use(morgan('dev'));
 
 const generateRandomString = (number) => {
@@ -66,40 +71,51 @@ app.post("/login", (req, res) => {
 
     return res.send("wrong password");
   }
-  console.log(users);
-  res.cookie("user_id", foundUserByEmail(email).id);
+  // res.cookie("user_id", foundUserByEmail(email).id);
+  req.session.user_id = foundUserByEmail(email).id;
   res.redirect("/urls");
 });
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  // res.clearCookie("user_id");
+  req.session.user_id = null;
 
   res.redirect("/urls");
 })
 app.get("/urls", (req, res) => {
-  if (!users[req.cookies["user_id"]]) {
+  // if (!users[req.cookies["user_id"]]) {
+    if(!users[req.session.user_id]){
     return res.redirect("/login");
   }
   let filterdDatabse = {};
   for (const url in urlDatabase) {
-    if (urlDatabase[url]["userID"] === req.cookies["user_id"]) {
+    if (urlDatabase[url]["userID"] === req.session.user_id) {
+    
+    // if (urlDatabase[url]["userID"] === req.cookies["user_id"]) {
       filterdDatabse[url] = urlDatabase[url];
     }
   }
+  let templateVars = { user: users[req.session.user_id], urls: filterdDatabse };
 
-  let templateVars = { user: users[req.cookies["user_id"]], urls: filterdDatabse };
+  // let templateVars = { user: users[req.cookies["user_id"]], urls: filterdDatabse };
 
   res.render('urls_index', templateVars);
 })
 app.post("/urls", (req, res) => {
   let randomNumberString = generateRandomString(6);
-  urlDatabase[randomNumberString] = { "longURL": req.body["longURL"], "userID": req.cookies["user_id"] };
+  urlDatabase[randomNumberString] = { "longURL": req.body["longURL"], "userID": req.session.user_id };
+
+  // urlDatabase[randomNumberString] = { "longURL": req.body["longURL"], "userID": req.cookies["user_id"] };
   res.redirect(`/urls/${randomNumberString}`);        // Respond with 'Ok' (we will replace this)
 });
 app.get("/urls/new", (req, res) => {
-  if (!users[req.cookies["user_id"]]) {
+  if (!users[req.session.user_id]) {
+
+  // if (!users[req.cookies["user_id"]]) {
     return res.redirect("/login");
   }
-  let templateVars = { user: users[req.cookies["user_id"]] }
+  let templateVars = { user: users[req.session.user_id] }
+
+  // let templateVars = { user: users[req.cookies["user_id"]] }
   return res.render("urls_new", templateVars);
 
 });
@@ -124,23 +140,30 @@ app.post("/urls/registration", (req, res) => {
   res.redirect("/urls");
 });
 app.get("/urls/:shortURL", (req, res) => {
-  if (!users[req.cookies["user_id"]]) {
+  if (!users[req.session.user_id]) {
+  
+  // if (!users[req.cookies["user_id"]]) {
     return res.redirect("/login");
   }
-  let templateVars = { user: users[req.cookies["user_id"]], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]["longURL"] };
+  // let templateVars = { user: users[req.cookies["user_id"]], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]["longURL"] };
+  let templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]["longURL"] };
 
   res.render('urls_show', templateVars);
 
 });
 app.post("/urls/:shortURL", (req, res) => {
-  if (!users[req.cookies["user_id"]]) {
+  if (!users[req.session.user_id]) {
+
+  // if (!users[req.cookies["user_id"]]) {
     return res.redirect("/login");
   }
   urlDatabase[req.params.shortURL]["longURL"] = req.body["longURL"];
   res.redirect("/urls");
 });
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (!users[req.cookies["user_id"]]) {
+  if (!users[req.session.user_id]) {
+  
+  // if (!users[req.cookies["user_id"]]) {
     return res.redirect("/login");
   }
   delete urlDatabase[req.params.shortURL];
