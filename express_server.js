@@ -1,8 +1,9 @@
 const express = require("Express");
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const morgan = require('morgan');
+const foundUserByEmail = require('./helpers');
 const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080;
@@ -44,15 +45,15 @@ const users = {
     password: "dishwasher-funk"
   }
 }
-const foundUserByEmail = (email) => {
-  for (const userId in users) {
-    const user = users[userId];
-    if (user.email === email) {
-      return user
-    }
-  }
-  return null;
-}
+// const foundUserByEmail = (email,database) => {
+//   for (const userId in database) {
+//     const user = database[userId];
+//     if (user.email === email) {
+//       return user
+//     }
+//   }
+//   return null;
+// }
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -62,17 +63,17 @@ app.get("/login", (req, res) => {
 });
 app.post("/login", (req, res) => {
   let { email, password } = req.body;
-  if (!foundUserByEmail(email)) {
+  if (!foundUserByEmail(email,users)) {
     res.status(403);
     return res.send("email did not found")
-  } else if (!bcrypt.compareSync(password,foundUserByEmail(email).password)) {
+  } else if (!bcrypt.compareSync(password,foundUserByEmail(email,users).password)) {
     console.log(users);
     res.status(403);
 
     return res.send("wrong password");
   }
   // res.cookie("user_id", foundUserByEmail(email).id);
-  req.session.user_id = foundUserByEmail(email).id;
+  req.session.user_id = foundUserByEmail(email,users).id;
   res.redirect("/urls");
 });
 app.post("/logout", (req, res) => {
@@ -128,7 +129,7 @@ app.post("/urls/registration", (req, res) => {
     res.status(400);
     return res.send('email or password is empty');
   }
-  if (foundUserByEmail(email)) {
+  if (foundUserByEmail(email,users)) {
     res.status(400);
     return res.send('email aready exist');
   }
