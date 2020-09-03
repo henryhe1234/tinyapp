@@ -1,6 +1,7 @@
 const express = require("Express");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 let morgan = require('morgan');
 const app = express();
 const PORT = 8080;
@@ -59,10 +60,13 @@ app.post("/login", (req, res) => {
   if (!foundUserByEmail(email)) {
     res.status(403);
     return res.send("email did not found")
-  } else if (foundUserByEmail(email).password !== password) {
+  } else if (!bcrypt.compareSync(password,foundUserByEmail(email).password)) {
+    console.log(users);
     res.status(403);
+
     return res.send("wrong password");
   }
+  console.log(users);
   res.cookie("user_id", foundUserByEmail(email).id);
   res.redirect("/urls");
 });
@@ -114,6 +118,7 @@ app.post("/urls/registration", (req, res) => {
   }
 
   let id = generateRandomString(6);
+  password = bcrypt.hashSync(password,2);
   let userobject = { id, email, password };
   users[id] = userobject;
   res.redirect("/urls");
