@@ -46,9 +46,13 @@ const users = {
 
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 app.get("/login", (req, res) => {
+  if (users[req.session.user_id]) {
+
+    return res.redirect("/urls");
+  }
   res.render('urls_login');
 });
 app.post("/login", (req, res) => {
@@ -57,7 +61,6 @@ app.post("/login", (req, res) => {
     res.status(403);
     return res.send("email did not found")
   } else if (!bcrypt.compareSync(password,foundUserByEmail(email,users).password)) {
-    console.log(users);
     res.status(403);
 
     return res.send("wrong password");
@@ -127,6 +130,10 @@ app.get("/urls/:shortURL", (req, res) => {
   
     return res.redirect("/login");
   }
+  if(urlDatabase[req.params.shortURL].userID !== req.session.user_id){
+    return res.send("this url is not yours!")
+  }
+
   let templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]["longURL"] };
 
   res.render('urls_show', templateVars);
@@ -137,19 +144,29 @@ app.post("/urls/:shortURL", (req, res) => {
 
     return res.redirect("/login");
   }
+
+  if(urlDatabase[req.params.shortURL].userID !== req.session.user_id){
+    return res.send("this url is not yours!")
+  }
   urlDatabase[req.params.shortURL]["longURL"] = req.body["longURL"];
-  res.redirect("/urls");
+  return res.redirect("/urls");
 });
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (!users[req.session.user_id]) {
   
     return res.redirect("/login");
   }
+  if(urlDatabase[req.params.shortURL].userID !== req.session.user_id){
+    return res.send("this url is not yours!")
+  }
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if(!urlDatabase[req.params.shortURL]["longURL"]){
+    res.send("the correspond long url does not exist")
+  }
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
 });
