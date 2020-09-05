@@ -42,11 +42,11 @@ const users = {
   }
 };
 
-
+//redirect to url home pages
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
-
+//showing html for user to log  in
 app.get("/login", (req, res) => {
   if (users[req.session.user_id]) {
 
@@ -55,7 +55,7 @@ app.get("/login", (req, res) => {
   let templateVars = { user: users[req.session.user_id] };
   res.render('urls_login', templateVars);
 });
-
+//handle user login compare the email and password in database
 app.post("/login", (req, res) => {
   let { email, password } = req.body;
   if (!foundUserByEmail(email, users)) {
@@ -69,13 +69,13 @@ app.post("/login", (req, res) => {
   req.session.user_id = foundUserByEmail(email, users).id;
   res.redirect("/urls");
 });
-
+//handle user logout
 app.post("/logout", (req, res) => {
   req.session.user_id = null;
 
   res.redirect("/urls");
 });
-
+//render the url home page
 app.get("/urls", (req, res) => {
   if (!users[req.session.user_id]) {
     return res.render('error');
@@ -92,13 +92,14 @@ app.get("/urls", (req, res) => {
 
   res.render('urls_index', templateVars);
 });
-
+//add a url to database
 app.post("/urls", (req, res) => {
   let randomNumberString = generateRandomString(6);
   urlDatabase[randomNumberString] = { "longURL": req.body["longURL"], "userID": req.session.user_id };
   console.log(urlDatabase);
   res.redirect(`/urls/${randomNumberString}`);        // Respond with 'Ok' (we will replace this)
 });
+//render html for user to put in new url
 app.get("/urls/new", (req, res) => {
   if (!users[req.session.user_id]) {
 
@@ -109,10 +110,12 @@ app.get("/urls/new", (req, res) => {
   return res.render("urls_new", templateVars);
 
 });
+//render html for user registration
 app.get("/urls/registration", (req, res) => {
   let templateVars = { user: users[req.session.user_id] };
   res.render('urls_registration', templateVars);
 });
+//handle user registration, put user info in database
 app.post("/urls/registration", (req, res) => {
   let { email, password } = req.body;
   if (!email || !password) {
@@ -130,6 +133,7 @@ app.post("/urls/registration", (req, res) => {
   users[id] = userobject;
   res.redirect("/urls");
 });
+//render html for user to edit their url
 app.get("/urls/:shortURL", (req, res) => {
   if (!users[req.session.user_id]) {
 
@@ -147,6 +151,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render('urls_show', templateVars);
 
 });
+//modify existing url in database
 app.post("/urls/:shortURL", (req, res) => {
   if (!users[req.session.user_id]) {
 
@@ -160,6 +165,7 @@ app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL]["longURL"] = req.body["longURL"];
   return res.redirect("/urls");
 });
+//delete url in database
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (!users[req.session.user_id]) {
 
@@ -172,7 +178,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
-
+//redirect user to longURL
 app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]["longURL"]) {
     res.send("the correspond long url does not exist");
@@ -180,7 +186,7 @@ app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
 });
-
+//server up
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
