@@ -78,7 +78,7 @@ app.post("/logout", (req, res) => {
 
 app.get("/urls", (req, res) => {
   if (!users[req.session.user_id]) {
-    return res.redirect("/login");
+    return res.render('error');
   }
   let filterdDatabse = {};
   for (const url in urlDatabase) {
@@ -102,7 +102,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   if (!users[req.session.user_id]) {
 
-    return res.redirect("/login");
+    return res.render('error');
   }
   let templateVars = { user: users[req.session.user_id] };
 
@@ -133,7 +133,8 @@ app.post("/urls/registration", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   if (!users[req.session.user_id]) {
 
-    return res.redirect("/login");
+    return res.render('error');
+
   }
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     return res.send("this url is not yours!");
@@ -149,7 +150,8 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   if (!users[req.session.user_id]) {
 
-    return res.redirect("/login");
+    return res.render('error');
+
   }
 
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
@@ -161,7 +163,8 @@ app.post("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (!users[req.session.user_id]) {
 
-    return res.redirect("/login");
+    return res.render('error');
+
   }
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     return res.send("this url is not yours!");
