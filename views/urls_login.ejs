@@ -5,18 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
 </head>
+<!-- <%- include('partials/_header') %> -->
 
-<form method="POST" action="/login">
-  <label>Email</label>
-  <input type="email" name="email">
-  <br>
-  <label>password</label>
-  <input type="password" name="password">
-  <button type="submit">Submit</button>
 
-</form>
-<a class="nav-item nav-link" href="/urls/registration">Registration</a>
 <body>
+  <%- include('partials/_header') %>
+  <form method="POST" action="/login">
+    <label>Email</label>
+    <input type="email" name="email">
+    <br>
+    <label>password</label>
+    <input type="password" name="password">
+    <button type="submit">Submit</button>
   
+  </form>
 </body>
 </html>

@@ -52,7 +52,8 @@ app.get("/login", (req, res) => {
 
     return res.redirect("/urls");
   }
-  res.render('urls_login');
+  let templateVars = { user: users[req.session.user_id] };
+  res.render('urls_login', templateVars);
 });
 
 app.post("/login", (req, res) => {
@@ -95,7 +96,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   let randomNumberString = generateRandomString(6);
   urlDatabase[randomNumberString] = { "longURL": req.body["longURL"], "userID": req.session.user_id };
-
+  console.log(urlDatabase);
   res.redirect(`/urls/${randomNumberString}`);        // Respond with 'Ok' (we will replace this)
 });
 app.get("/urls/new", (req, res) => {
@@ -109,7 +110,8 @@ app.get("/urls/new", (req, res) => {
 
 });
 app.get("/urls/registration", (req, res) => {
-  res.render("urls_registration");
+  let templateVars = { user: users[req.session.user_id] };
+  res.render('urls_registration', templateVars);
 });
 app.post("/urls/registration", (req, res) => {
   let { email, password } = req.body;
@@ -136,7 +138,9 @@ app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     return res.send("this url is not yours!");
   }
-
+  if (!req.session.user_id) {
+    res.send('TypeError: Cannot read property" userID" of undefined');
+  }
   let templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]["longURL"] };
 
   res.render('urls_show', templateVars);
