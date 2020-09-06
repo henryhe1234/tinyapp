@@ -140,11 +140,16 @@ app.get("/urls/:shortURL", (req, res) => {
     return res.render('error');
 
   }
+
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     return res.send("this url is not yours!");
   }
   if (!req.session.user_id) {
-    res.send('TypeError: Cannot read property" userID" of undefined');
+    return res.send('TypeError: Cannot read property" userID" of undefined');
+  }
+  if(!urlDatabase[req.params.shortURL]){
+    res.status(404);
+    return res.send("shortURL does not exist");
   }
   let templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]["longURL"] };
 
