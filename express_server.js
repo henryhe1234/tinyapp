@@ -111,12 +111,12 @@ app.get("/urls/new", (req, res) => {
 
 });
 //render html for user registration
-app.get("/urls/registration", (req, res) => {
+app.get("/register", (req, res) => {
   let templateVars = { user: users[req.session.user_id] };
   res.render('urls_registration', templateVars);
 });
 //handle user registration, put user info in database
-app.post("/urls/registration", (req, res) => {
+app.post("/register", (req, res) => {
   let { email, password } = req.body;
   if (!email || !password) {
     res.status(400);
@@ -131,6 +131,7 @@ app.post("/urls/registration", (req, res) => {
   password = bcrypt.hashSync(password, 2);
   let userobject = { id, email, password };
   users[id] = userobject;
+  req.session.user_id = foundUserByEmail(email, users).id;
   res.redirect("/urls");
 });
 //render html for user to edit their url
